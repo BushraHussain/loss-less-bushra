@@ -239,7 +239,6 @@ const setupToken = async (
   const deployedToken = await token
     .connect(initialHolder)
     .deploy(supply, name, symbol, admin, backupAdmin, lockPeriod, controller);
-
   return deployedToken;
 };
 

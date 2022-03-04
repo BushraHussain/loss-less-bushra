@@ -543,13 +543,33 @@ contract LosslessGovernance is ILssGovernance, Initializable, AccessControlUpgra
 
     ///@notice This function verifies is an address belongs to a contract
     ///@param _addr address to verify
-    function isContract(address _addr) private view returns (bool){
+    function isContract(address _addr) public view returns (bool){
          uint32 size;
         assembly {
             size := extcodesize(_addr)
         }
         return (size > 0);
     }
+
+//*********************************ALLOW ONLY SMART CONTRACTS TO RETRIEVE*******************/
+
+    /// @notice This lets an erroneously reported smart contract to retrieve compensation
+    function retrieveCompensationForContracts(address payable _smartcontract) public whenNotPaused  {
+
+        require(isContract(_smartcontract),"LSS: Only contracts allowed");
+        require(!compensation[_smartcontract].payed, "LSS: Already retrieved");
+        require(compensation[_smartcontract].amount > 0, "LSS: No retribution assigned");
+        
+        compensation[_smartcontract].payed = true;
+        losslessReporting.retrieveCompensation(_smartcontract, compensation[_smartcontract].amount);
+
+        emit CompensationRetrieval(_smartcontract, compensation[_smartcontract].amount);
+        compensation[_smartcontract].amount = 0;
+
+    }
+
+
+//*******************************************************************************************/
 
     ///@notice This function is for committee members to claim their rewards
     ///@param _reportId report ID to claim reward from
